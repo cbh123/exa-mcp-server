@@ -5,16 +5,10 @@ import { ExaSearchRequest, ExaSearchResponse } from "../types.js";
 import { createRequestLogger } from "../utils/logger.js";
 
 // Register the web search tool
-<<<<<<< HEAD
-toolRegistry["web_search"] = {
-  name: "web_search",
-  description:
-    "Search the web using Exa AI - performs real-time web searches and can scrape content from specific URLs. Supports configurable result counts and returns the content from the most relevant websites.",
-=======
 toolRegistry["web_search_exa"] = {
   name: "web_search_exa",
-  description: "Search the web using Exa AI - performs real-time web searches and can scrape content from specific URLs. Supports configurable result counts and returns the content from the most relevant websites.",
->>>>>>> e03ea00dac5005f7fa9fe27d0bdc7e10d1198191
+  description:
+    "Search the web using Exa AI - performs real-time web searches and can scrape content from specific URLs. Supports configurable result counts and returns the content from the most relevant websites.",
   schema: {
     query: z.string().describe("Search query"),
     numResults: z
@@ -23,15 +17,9 @@ toolRegistry["web_search_exa"] = {
       .describe("Number of search results to return (default: 5)"),
   },
   handler: async ({ query, numResults }, extra) => {
-<<<<<<< HEAD
-    const requestId = `web_search-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
-    const logger = createRequestLogger(requestId, "web_search");
-
-=======
     const requestId = `web_search_exa-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
-    const logger = createRequestLogger(requestId, 'web_search_exa');
-    
->>>>>>> e03ea00dac5005f7fa9fe27d0bdc7e10d1198191
+    const logger = createRequestLogger(requestId, "web_search_exa");
+
     logger.start(query);
 
     try {
