@@ -7,27 +7,31 @@ import { createRequestLogger } from "../utils/logger.js";
 // Register the web search tool
 toolRegistry["web_search"] = {
   name: "web_search",
-  description: "Search the web using Exa AI - performs real-time web searches and can scrape content from specific URLs. Supports configurable result counts and returns the content from the most relevant websites.",
+  description:
+    "Search the web using Exa AI - performs real-time web searches and can scrape content from specific URLs. Supports configurable result counts and returns the content from the most relevant websites.",
   schema: {
     query: z.string().describe("Search query"),
-    numResults: z.number().optional().describe("Number of search results to return (default: 5)")
+    numResults: z
+      .number()
+      .optional()
+      .describe("Number of search results to return (default: 5)"),
   },
   handler: async ({ query, numResults }, extra) => {
     const requestId = `web_search-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
-    const logger = createRequestLogger(requestId, 'web_search');
-    
+    const logger = createRequestLogger(requestId, "web_search");
+
     logger.start(query);
-    
+
     try {
       // Create a fresh axios instance for each request
       const axiosInstance = axios.create({
         baseURL: API_CONFIG.BASE_URL,
         headers: {
-          'accept': 'application/json',
-          'content-type': 'application/json',
-          'x-api-key': process.env.EXA_API_KEY || ''
+          accept: "application/json",
+          "content-type": "application/json",
+          "x-api-key": "35b1e4b0-057a-4aa8-b26a-4163cd908f58",
         },
-        timeout: 25000
+        timeout: 25000,
       });
 
       const searchRequest: ExaSearchRequest = {
@@ -36,70 +40,78 @@ toolRegistry["web_search"] = {
         numResults: numResults || API_CONFIG.DEFAULT_NUM_RESULTS,
         contents: {
           text: {
-            maxCharacters: API_CONFIG.DEFAULT_MAX_CHARACTERS
+            maxCharacters: API_CONFIG.DEFAULT_MAX_CHARACTERS,
           },
-          livecrawl: 'always'
-        }
+          livecrawl: "always",
+        },
       };
-      
+
       logger.log("Sending request to Exa API");
-      
+
       const response = await axiosInstance.post<ExaSearchResponse>(
         API_CONFIG.ENDPOINTS.SEARCH,
         searchRequest,
         { timeout: 25000 }
       );
-      
+
       logger.log("Received response from Exa API");
 
       if (!response.data || !response.data.results) {
         logger.log("Warning: Empty or invalid response from Exa API");
         return {
-          content: [{
-            type: "text" as const,
-            text: "No search results found. Please try a different query."
-          }]
+          content: [
+            {
+              type: "text" as const,
+              text: "No search results found. Please try a different query.",
+            },
+          ],
         };
       }
 
       logger.log(`Found ${response.data.results.length} results`);
-      
+
       const result = {
-        content: [{
-          type: "text" as const,
-          text: JSON.stringify(response.data, null, 2)
-        }]
+        content: [
+          {
+            type: "text" as const,
+            text: JSON.stringify(response.data, null, 2),
+          },
+        ],
       };
-      
+
       logger.complete();
       return result;
     } catch (error) {
       logger.error(error);
-      
+
       if (axios.isAxiosError(error)) {
         // Handle Axios errors specifically
-        const statusCode = error.response?.status || 'unknown';
+        const statusCode = error.response?.status || "unknown";
         const errorMessage = error.response?.data?.message || error.message;
-        
+
         logger.log(`Axios error (${statusCode}): ${errorMessage}`);
         return {
-          content: [{
-            type: "text" as const,
-            text: `Search error (${statusCode}): ${errorMessage}`
-          }],
+          content: [
+            {
+              type: "text" as const,
+              text: `Search error (${statusCode}): ${errorMessage}`,
+            },
+          ],
           isError: true,
         };
       }
-      
+
       // Handle generic errors
       return {
-        content: [{
-          type: "text" as const,
-          text: `Search error: ${error instanceof Error ? error.message : String(error)}`
-        }],
+        content: [
+          {
+            type: "text" as const,
+            text: `Search error: ${error instanceof Error ? error.message : String(error)}`,
+          },
+        ],
         isError: true,
       };
     }
   },
-  enabled: true  // Enabled by default
-}; 
+  enabled: true, // Enabled by default
+};
